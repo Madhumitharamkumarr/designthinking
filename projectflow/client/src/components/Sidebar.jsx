@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, CalendarDays, FolderKanban, FileText,
-  LogOut, Settings, Users, Upload
+  LogOut, Settings, Users, Upload, ClipboardList
 } from 'lucide-react';
 
 const navConfig = {
@@ -11,6 +11,7 @@ const navConfig = {
     { to: '/events', icon: <CalendarDays />, label: 'Events' },
     { to: '/projects', icon: <FolderKanban />, label: 'Projects' },
     { to: '/submissions', icon: <FileText />, label: 'Submissions' },
+    { to: '/assignments', icon: <ClipboardList />, label: 'Assignments' },
   ],
   coordinator: [
     { to: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
@@ -21,7 +22,8 @@ const navConfig = {
   mentor: [
     { to: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
     { to: '/events', icon: <CalendarDays />, label: 'Events' },
-    { to: '/projects', icon: <FolderKanban />, label: 'Projects' },
+    { to: '/projects', icon: <FolderKanban />, label: 'Assigned Projects' },
+    { to: '/submissions', icon: <FileText />, label: 'Submissions' },
   ],
   student: [
     { to: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },

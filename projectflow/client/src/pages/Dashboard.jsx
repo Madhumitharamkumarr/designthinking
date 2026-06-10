@@ -6,6 +6,7 @@ import { eventService } from '../services/eventService';
 import { projectService } from '../services/projectService';
 import { submissionService } from '../services/submissionService';
 import { authService } from '../services/authService';
+import { mentorRequestService } from '../services/mentorRequestService';
 import {
   CalendarDays, FolderKanban, FileText, Users,
   Plus, ArrowRight, TrendingUp, CheckCircle, Clock
@@ -14,7 +15,7 @@ import {
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ events: 0, projects: 0, submissions: 0, users: 0, approved: 0, pending: 0 });
+  const [stats, setStats] = useState({ events: 0, projects: 0, submissions: 0, users: 0, approved: 0, pending: 0, pendingRequests: 0, unassigned: 0 });
   const [recentEvents, setRecentEvents] = useState([]);
   const [recentProjects, setRecentProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,10 +33,15 @@ export default function Dashboard() {
         const submissions = subRes.data;
 
         let userCount = 0;
+        let pendingRequests = 0;
+        let unassigned = 0;
         if (user.role === 'admin') {
           try {
             const usersRes = await authService.getAllUsers();
             userCount = usersRes.data.length;
+            const reqRes = await mentorRequestService.getAll({ status: 'pending' });
+            pendingRequests = reqRes.data.length;
+            unassigned = projects.filter(p => !p.assignedMentor || !p.assignedCoordinator).length;
           } catch (_) {}
         }
 
@@ -46,6 +52,8 @@ export default function Dashboard() {
           users: userCount,
           approved: submissions.filter((s) => s.status === 'approved').length,
           pending: submissions.filter((s) => s.status === 'pending').length,
+          pendingRequests,
+          unassigned,
         });
         setRecentEvents(events.slice(0, 3));
         setRecentProjects(projects.slice(0, 3));
@@ -68,7 +76,11 @@ export default function Dashboard() {
     { label: 'Submissions', value: stats.submissions, icon: '📄', color: 'cyan' },
     { label: 'Approved', value: stats.approved, icon: '✅', color: 'green' },
     { label: 'Pending Review', value: stats.pending, icon: '⏳', color: 'amber' },
-    ...(user.role === 'admin' ? [{ label: 'Total Users', value: stats.users, icon: '👥', color: 'blue' }] : []),
+    ...(user.role === 'admin' ? [
+      { label: 'Total Users', value: stats.users, icon: '👥', color: 'blue' },
+      { label: 'Pending Requests', value: stats.pendingRequests, icon: '📩', color: 'amber' },
+      { label: 'Unassigned Projects', value: stats.unassigned, icon: '⚠️', color: 'amber' },
+    ] : []),
   ];
 
   if (loading) return <Layout><div className="loading-spinner"><div className="spinner" /></div></Layout>;
@@ -110,6 +122,11 @@ export default function Dashboard() {
           {user.role === 'coordinator' && (
             <button className="btn btn-primary" onClick={() => navigate('/submissions')}>
               <FileText size={14} /> Review Submissions
+            </button>
+          )}
+          {user.role === 'mentor' && (
+            <button className="btn btn-primary" onClick={() => navigate('/projects')}>
+              <FolderKanban size={14} /> Review Assigned Projects
             </button>
           )}
         </div>

@@ -196,13 +196,27 @@ export default function EventDetail() {
           ) : (
             <div className="table-wrapper">
               <table>
-                <thead><tr><th>Project</th><th>Student</th><th>Team</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Project</th><th>Student</th><th>Team</th><th>Mentor</th><th>Coordinator</th><th>Actions</th></tr></thead>
                 <tbody>
                   {projects.map((proj) => (
                     <tr key={proj._id}>
                       <td style={{ fontWeight: 600 }}>{proj.projectTitle}</td>
                       <td style={{ color: 'var(--text-secondary)' }}>{proj.studentId?.name}</td>
                       <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{proj.teamMembers?.join(', ') || '—'}</td>
+                      <td>
+                        {proj.assignedMentor ? (
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#065F46' }}>{proj.assignedMentor.name}</span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#EF4444', fontStyle: 'italic' }}>Unassigned</span>
+                        )}
+                      </td>
+                      <td>
+                        {proj.assignedCoordinator ? (
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#6D28D9' }}>{proj.assignedCoordinator.name}</span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#EF4444', fontStyle: 'italic' }}>Unassigned</span>
+                        )}
+                      </td>
                       <td>
                         <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/projects/${proj._id}`)}>
                           View →

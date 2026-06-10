@@ -14,6 +14,7 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Submissions from './pages/Submissions';
 import CreateEvent from './pages/CreateEvent';
+import Assignments from './pages/Assignments';
 
 export default function App() {
   return (
@@ -63,6 +64,11 @@ export default function App() {
           } />
           <Route path="/submissions" element={
             <ProtectedRoute><Submissions /></ProtectedRoute>
+          } />
+          <Route path="/assignments" element={
+            <RoleRoute roles={['admin']}>
+              <Assignments />
+            </RoleRoute>
           } />
 
           {/* Redirects */}

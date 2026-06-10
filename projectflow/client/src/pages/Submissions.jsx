@@ -15,7 +15,7 @@ export default function Submissions() {
   const [feedback, setFeedback] = useState('');
   const [reviewing, setReviewing] = useState(false);
 
-  const isCoordinator = user.role === 'coordinator' || user.role === 'admin';
+  const canReview = ['coordinator', 'admin', 'mentor'].includes(user.role);
 
   useEffect(() => {
     submissionService.getAll()
@@ -95,7 +95,7 @@ export default function Submissions() {
         <SubmissionTable
           submissions={filtered}
           onReview={handleReview}
-          showReview={isCoordinator}
+          showReview={canReview}
         />
       )}
 

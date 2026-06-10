@@ -8,8 +8,10 @@ import { useAuth } from '../context/AuthContext';
 import { projectService } from '../services/projectService';
 import { stageService } from '../services/stageService';
 import { submissionService } from '../services/submissionService';
+import { mentorRequestService } from '../services/mentorRequestService';
+import { eventService } from '../services/eventService';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ExternalLink, Send, MessageSquare } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Send, MessageSquare, UserPlus } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -25,20 +27,37 @@ export default function ProjectDetail() {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Mentor request state
+  const [mentorRequests, setMentorRequests] = useState([]);
+  const [eventMentors, setEventMentors] = useState([]);
+  const [showMentorModal, setShowMentorModal] = useState(false);
+  const [selectedMentorId, setSelectedMentorId] = useState('');
+  const [requestReason, setRequestReason] = useState('');
+  const [requestingMentor, setRequestingMentor] = useState(false);
+
   const isOwner = user.role === 'student' && project?.studentId?._id === user._id;
   const canSubmit = isOwner;
+  const canReview = ['coordinator', 'admin', 'mentor'].includes(user.role);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const projRes = await projectService.getById(id);
         setProject(projRes.data);
-        const [stRes, subRes] = await Promise.all([
+        const [stRes, subRes, reqRes] = await Promise.all([
           stageService.getByEvent(projRes.data.eventId._id),
           submissionService.getAll({ projectId: id }),
+          mentorRequestService.getByProject(id),
         ]);
         setStages(stRes.data);
         setSubmissions(subRes.data);
+        setMentorRequests(reqRes.data);
+
+        // Fetch event mentors for selection
+        if (projRes.data.eventId?.mentorIds?.length > 0) {
+          const evRes = await eventService.getById(projRes.data.eventId._id);
+          setEventMentors(evRes.data.mentorIds || []);
+        }
       } catch {
         toast.error('Failed to load project');
       }
@@ -76,6 +95,26 @@ export default function ProjectDetail() {
     setSubmitting(false);
   };
 
+  const handleRequestMentor = async () => {
+    if (!selectedMentorId) return toast.error('Please select a mentor');
+    setRequestingMentor(true);
+    try {
+      const res = await mentorRequestService.create({
+        projectId: id,
+        requestedMentorId: selectedMentorId,
+        reason: requestReason,
+      });
+      setMentorRequests([res.data, ...mentorRequests]);
+      setShowMentorModal(false);
+      setSelectedMentorId('');
+      setRequestReason('');
+      toast.success('Mentor request submitted! Admin will review it.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to request mentor');
+    }
+    setRequestingMentor(false);
+  };
+
   if (loading) return <Layout><div className="loading-spinner"><div className="spinner" /></div></Layout>;
   if (!project) return <Layout><div className="empty-state"><div className="empty-state-icon">❌</div><h3>Project not found</h3></div></Layout>;
 
@@ -109,7 +148,68 @@ export default function ProjectDetail() {
             </div>
           )}
         </div>
+
+        {/* Assignment Info */}
+        <div style={{ display: 'flex', gap: 16, marginTop: 14, flexWrap: 'wrap' }}>
+          <div style={{
+            padding: '8px 14px', borderRadius: 'var(--radius)',
+            background: project.assignedMentor ? 'rgba(16,185,129,.15)' : 'rgba(239,68,68,.15)',
+            border: `1px solid ${project.assignedMentor ? 'rgba(16,185,129,.3)' : 'rgba(239,68,68,.3)'}`,
+          }}>
+            <span style={{ color: 'rgba(255,255,255,.6)', fontSize: 12 }}>🎓 Mentor: </span>
+            <strong style={{ color: project.assignedMentor ? '#10B981' : '#EF4444', fontSize: 13 }}>
+              {project.assignedMentor?.name || 'Not Assigned'}
+            </strong>
+          </div>
+          <div style={{
+            padding: '8px 14px', borderRadius: 'var(--radius)',
+            background: project.assignedCoordinator ? 'rgba(99,102,241,.15)' : 'rgba(239,68,68,.15)',
+            border: `1px solid ${project.assignedCoordinator ? 'rgba(99,102,241,.3)' : 'rgba(239,68,68,.3)'}`,
+          }}>
+            <span style={{ color: 'rgba(255,255,255,.6)', fontSize: 12 }}>👨‍🏫 Coordinator: </span>
+            <strong style={{ color: project.assignedCoordinator ? '#818CF8' : '#EF4444', fontSize: 13 }}>
+              {project.assignedCoordinator?.name || 'Not Assigned'}
+            </strong>
+          </div>
+        </div>
       </div>
+
+      {/* Mentor Selection for Student */}
+      {isOwner && !project.assignedMentor && (
+        <div className="card" style={{ marginBottom: 24, border: '1px solid rgba(251,191,36,.3)', background: 'rgba(251,191,36,.04)' }}>
+          <div className="section-header">
+            <span className="section-title">🎓 Select Preferred Mentor</span>
+          </div>
+          {mentorRequests.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {mentorRequests.map((req) => (
+                <div key={req._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{req.requestedMentorId?.name}</span>
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                    background: req.status === 'approved' ? '#D1FAE5' : req.status === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                    color: req.status === 'approved' ? '#065F46' : req.status === 'rejected' ? '#991B1B' : '#92400E',
+                  }}>{req.status}</span>
+                  {req.adminNote && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>— {req.adminNote}</span>}
+                </div>
+              ))}
+              <button className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start', marginTop: 4 }}
+                onClick={() => setShowMentorModal(true)}>
+                <UserPlus size={13} /> Request Another Mentor
+              </button>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12 }}>
+                No mentor assigned yet. Select your preferred mentor — admin will review and assign.
+              </p>
+              <button className="btn btn-primary" onClick={() => setShowMentorModal(true)}>
+                <UserPlus size={14} /> Select Preferred Mentor
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stage Progress */}
       <div className="card" style={{ marginBottom: 24 }}>
@@ -146,8 +246,7 @@ export default function ProjectDetail() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
                         width: 32, height: 32, borderRadius: '50%',
-                        background: 'var(--primary-bg)',
-                        color: 'var(--primary)',
+                        background: 'var(--primary-bg)', color: 'var(--primary)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 700, fontSize: 13,
                       }}>{stage.order}</div>
@@ -231,7 +330,7 @@ export default function ProjectDetail() {
               </div>
               <div className="form-group">
                 <label className="form-label">Notes (optional)</label>
-                <textarea className="form-textarea" placeholder="Any notes for the coordinator…" value={notes}
+                <textarea className="form-textarea" placeholder="Any notes for the reviewer…" value={notes}
                   onChange={(e) => setNotes(e.target.value)} rows={3} />
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -242,6 +341,48 @@ export default function ProjectDetail() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mentor Request Modal */}
+      {showMentorModal && (
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowMentorModal(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <span className="modal-title">Request Preferred Mentor</span>
+              <button className="modal-close" onClick={() => setShowMentorModal(false)}>×</button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Select Mentor *</label>
+              {eventMentors.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No mentors available for this event.</p>
+              ) : (
+                <select className="form-select" value={selectedMentorId}
+                  onChange={(e) => setSelectedMentorId(e.target.value)} required>
+                  <option value="">— Choose a mentor —</option>
+                  {eventMentors.map((m) => {
+                    const alreadyRequested = mentorRequests.some((r) => r.requestedMentorId?._id === m._id);
+                    return (
+                      <option key={m._id} value={m._id} disabled={alreadyRequested}>
+                        {m.name} ({m.email}){alreadyRequested ? ' (already requested)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </div>
+            <div className="form-group">
+              <label className="form-label">Reason (optional)</label>
+              <textarea className="form-textarea" placeholder="Why do you prefer this mentor? (helps admin decide)"
+                value={requestReason} onChange={(e) => setRequestReason(e.target.value)} rows={3} />
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setShowMentorModal(false)}>Cancel</button>
+              <button className="btn btn-primary" disabled={requestingMentor || !selectedMentorId} onClick={handleRequestMentor}>
+                <UserPlus size={14} /> {requestingMentor ? 'Requesting…' : 'Request Mentor'}
+              </button>
+            </div>
           </div>
         </div>
       )}

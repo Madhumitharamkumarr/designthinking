@@ -15,6 +15,18 @@ const projectSchema = new mongoose.Schema(
       required: true,
     },
     teamMembers: [{ type: String }],
+    assignedMentor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    assignedCoordinator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    mentorAssignedAt: { type: Date },
+    coordinatorAssignedAt: { type: Date },
   },
   { timestamps: true }
 );

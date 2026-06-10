@@ -12,6 +12,6 @@ const { requireRole } = require('../middleware/roles');
 router.post('/', protect, requireRole('student'), createSubmission);
 router.get('/', protect, getSubmissions);
 router.get('/:id', protect, getSubmission);
-router.patch('/:id/review', protect, requireRole('coordinator', 'admin'), reviewSubmission);
+router.patch('/:id/review', protect, requireRole('coordinator', 'admin', 'mentor'), reviewSubmission);
 
 module.exports = router;

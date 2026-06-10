@@ -10,6 +10,7 @@ const stageRoutes = require('./routes/stageRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const mentorRequestRoutes = require('./routes/mentorRequestRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -28,6 +29,7 @@ app.use('/api/stages', stageRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/mentor-requests', mentorRequestRoutes);
 
 // Health check
 app.get('/', (req, res) => {

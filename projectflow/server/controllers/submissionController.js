@@ -68,13 +68,16 @@ const getSubmissions = async (req, res) => {
       query.projectId = { $in: myProjects.map((p) => p._id) };
     }
 
-    // Coordinators see submissions from their events' projects
+    // Coordinators see submissions only from their assigned projects
     if (req.user.role === 'coordinator') {
-      const Event = require('../models/Event');
-      const myEvents = await Event.find({ coordinatorId: req.user._id }).select('_id');
-      const eventIds = myEvents.map((e) => e._id);
-      const projects = await Project.find({ eventId: { $in: eventIds } }).select('_id');
-      query.projectId = { $in: projects.map((p) => p._id) };
+      const assignedProjects = await Project.find({ assignedCoordinator: req.user._id }).select('_id');
+      query.projectId = { $in: assignedProjects.map((p) => p._id) };
+    }
+
+    // Mentors see submissions only from their assigned projects
+    if (req.user.role === 'mentor') {
+      const assignedProjects = await Project.find({ assignedMentor: req.user._id }).select('_id');
+      query.projectId = { $in: assignedProjects.map((p) => p._id) };
     }
 
     const submissions = await Submission.find(query)
@@ -91,7 +94,7 @@ const getSubmissions = async (req, res) => {
 
 // @desc   Review a submission (approve/reject + feedback)
 // @route  PATCH /api/submissions/:id/review
-// @access Coordinator
+// @access Mentor, Coordinator, Admin (only for assigned projects)
 const reviewSubmission = async (req, res) => {
   try {
     const { status, feedback } = req.body;
@@ -102,6 +105,24 @@ const reviewSubmission = async (req, res) => {
 
     const submission = await Submission.findById(req.params.id);
     if (!submission) return res.status(404).json({ message: 'Submission not found' });
+
+    // Contextual authorization: verify reviewer is assigned to this project
+    const project = await Project.findById(submission.projectId);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    if (req.user.role === 'mentor') {
+      if (!project.assignedMentor || project.assignedMentor.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'You are not the assigned mentor for this project' });
+      }
+    }
+
+    if (req.user.role === 'coordinator') {
+      if (!project.assignedCoordinator || project.assignedCoordinator.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'You are not the assigned coordinator for this project' });
+      }
+    }
+
+    // Admin can review any project
 
     submission.status = status;
     submission.feedback = feedback || '';
