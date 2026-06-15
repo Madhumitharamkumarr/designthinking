@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: projectflow-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: projectflow-server
+  template:
+    metadata:
+      labels:
+        app: projectflow-server
+    spec:
+      containers:
+        - name: projectflow-server
+          image: projectflow-server:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://mongo:27017/projectflow"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: projectflow-server
+spec:
+  selector:
+    app: projectflow-server
+  ports:
+    - port: 5000
+      targetPort: 5000
