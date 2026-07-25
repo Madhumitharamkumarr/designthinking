@@ -47,7 +47,7 @@ export default function Login() {
             </div>
           </div>
           <div className="auth-welcome-copy">
-            <h1 className="auth-title">Welcome back 👋</h1>
+            <h1 className="auth-title">Welcome back dude👋</h1>
             <p className="auth-subtitle">
               Sign in to your account to continue to your dashboard.
             </p>
