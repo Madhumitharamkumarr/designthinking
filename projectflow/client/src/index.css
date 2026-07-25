@@ -413,7 +413,7 @@ tbody tr:hover { background: #FAFBFF; }
 .auth-page {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #0F172A 0%, #111827 40%, #212E48 100%);
+  background: linear-gradient(135deg, #0B1120 0%, #111827 45%, #08101F 100%);
   padding: 24px;
   position: relative;
   overflow: hidden;
@@ -422,14 +422,14 @@ tbody tr:hover { background: #FAFBFF; }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 75%, rgba(59,130,246,.22) 0%, transparent 45%),
-              radial-gradient(circle at 85% 20%, rgba(99,102,241,.20) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 75%, rgba(56,189,248,.22) 0%, transparent 45%),
+              radial-gradient(circle at 85% 20%, rgba(168,85,247,.18) 0%, transparent 50%);
 }
 .auth-box {
   width: 100%; max-width: 500px;
-  background: rgba(15,23,42,.9);
+  background: rgba(12,18,35,.94);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(56,189,248,.18);
   border-radius: var(--radius-xl);
   padding: 42px;
   position: relative;
@@ -445,33 +445,33 @@ tbody tr:hover { background: #FAFBFF; }
 .auth-logo { display: flex; align-items: center; gap: 12px; }
 .auth-logo-icon {
   width: 46px; height: 46px;
-  background: linear-gradient(135deg, #2160C4, #6366F1);
+  background: linear-gradient(135deg, #38BDF8, #A855F7);
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; color: #fff; font-weight: 900;
 }
 .auth-logo-text { font-size: 22px; font-weight: 800; color: #fff; }
-.auth-logo-sub { font-size: 12px; color: rgba(255,255,255,.65); }
+.auth-logo-sub { font-size: 12px; color: rgba(255,255,255,.75); }
 .auth-welcome-copy { display: flex; flex-direction: column; gap: 8px; }
-.auth-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 0; }
-.auth-subtitle { font-size: 15px; color: rgba(255,255,255,.68); line-height: 1.65; max-width: 440px; }
-.auth-box .form-label { color: rgba(255,255,255,.8); }
+.auth-title { font-size: 28px; font-weight: 800; color: #eef2ff; margin-bottom: 0; }
+.auth-subtitle { font-size: 15px; color: rgba(226,232,255,.75); line-height: 1.65; max-width: 440px; }
+.auth-box .form-label { color: rgba(226,232,255,.85); }
 .auth-box .form-input, .auth-box .form-select {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(56,189,248,.18);
+  background: rgba(255,255,255,.06);
   color: #fff;
   padding: 14px 16px;
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
 }
 .auth-box .form-input:focus, .auth-box .form-select:focus {
-  border-color: var(--primary);
-  background: rgba(255,255,255,.14);
-  box-shadow: 0 0 0 4px rgba(33,96,196,.2);
+  border-color: #38BDF8;
+  background: rgba(56,189,248,.12);
+  box-shadow: 0 0 0 4px rgba(56,189,248,.18);
 }
-.auth-box .form-input::placeholder { color: rgba(255,255,255,.35); }
-.auth-box .form-select option { background: #1E293B; color: #fff; }
+.auth-box .form-input::placeholder { color: rgba(255,255,255,.38); }
+.auth-box .form-select option { background: #0f172a; color: #fff; }
 .password-field {
   position: relative;
 }
@@ -486,15 +486,24 @@ tbody tr:hover { background: #FAFBFF; }
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.75);
+  border: 1px solid rgba(56,189,248,.22);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.82);
   transition: background var(--transition), transform var(--transition), color var(--transition);
 }
 .password-toggle:hover {
-  background: rgba(255,255,255,.16);
+  background: rgba(56,189,248,.16);
   color: #fff;
   transform: translateY(-50%) scale(1.02);
+}
+.auth-box .btn-primary {
+  background: linear-gradient(135deg, #38BDF8, #A855F7);
+  color: #fff;
+  border: none;
+}
+.auth-box .btn-primary:hover {
+  background: linear-gradient(135deg, #22C55E, #8B5CF6);
+  box-shadow: 0 8px 26px rgba(56,189,248,.25);
 }
 .auth-submit {
   margin-top: 10px;
@@ -506,12 +515,12 @@ tbody tr:hover { background: #FAFBFF; }
 }
 .auth-link {
   font-size: 14px;
-  color: rgba(255,255,255,.65);
+  color: rgba(226,232,255,.75);
   margin-top: 24px;
   text-align: center;
 }
 .auth-link a {
-  color: var(--primary-light);
+  color: #38BDF8;
   font-weight: 600;
 }
 .auth-link a:hover { text-decoration: underline; }
