@@ -111,7 +111,7 @@ export default function Login() {
         </form>
 
         <p className="auth-link">
-          Don’t have an account? <Link to="/register">Create one</Link>
+          Don’t have an account? <Link to="/register">Createe one</Link>
         </p>
       </div>
     </div>
